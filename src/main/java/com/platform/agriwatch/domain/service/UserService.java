@@ -10,4 +10,5 @@ public interface UserService {
     Optional<User> getById(Long userId);
     User update(User user);
 
+    Optional<User> getByUsername(String username);
 }

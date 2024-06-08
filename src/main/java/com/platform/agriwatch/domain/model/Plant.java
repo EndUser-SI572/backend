@@ -44,6 +44,7 @@ public class Plant {
                 .idealHumidity(this.idealHumidity)
                 .idealTemperature(this.idealTemperature)
                 .imageUrl(this.imageUrl)
+                .userId(this.user.getId())
 
                 .build();
     }

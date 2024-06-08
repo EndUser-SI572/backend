@@ -1,7 +1,6 @@
 package com.platform.agriwatch.application.dto.request;
 
 import com.platform.agriwatch.domain.model.Plant;
-import com.platform.agriwatch.domain.model.User;
 import lombok.Data;
 
 @Data

@@ -20,6 +20,7 @@ public class UserRequest {
                 .name(this.name)
                 .lastName(this.lastName)
                 .username(this.username)
+                .password(this.password)
                 .age(this.age)
                 .gender(this.gender)
                 .cellPhone(this.cellPhone)

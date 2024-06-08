@@ -1,9 +1,7 @@
 package com.platform.agriwatch.application.controller;
 
 import com.platform.agriwatch.application.dto.request.PlantRequest;
-import com.platform.agriwatch.application.dto.request.UserRequest;
 import com.platform.agriwatch.application.dto.response.PlantResponse;
-import com.platform.agriwatch.application.dto.response.UserResponse;
 import com.platform.agriwatch.domain.model.Plant;
 import com.platform.agriwatch.domain.model.User;
 import com.platform.agriwatch.domain.service.PlantService;
@@ -20,6 +18,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController
+
 @RequestMapping(value = "/api/v1/plant", produces = "application/json")
 public class PlantController {
 

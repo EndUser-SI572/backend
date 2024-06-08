@@ -16,4 +16,5 @@ public class PlantResponse {
     private Float idealHumidity;
     private Float idealTemperature;
     private String imageUrl;
+    private Long userId;
 }
