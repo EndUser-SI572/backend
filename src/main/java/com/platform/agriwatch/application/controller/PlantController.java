@@ -36,6 +36,9 @@ public class PlantController {
         plant.setUser(user.get());
         plantService.create(plant);
 
+        user.get().setNumberPlants(user.get().getNumberPlants()+1);
+        userService.update(user.get());
+
         return new ResponseEntity<>(plant.toPlantResponse(), HttpStatus.CREATED);
     }
 
