@@ -15,6 +15,7 @@ public class SensorController {
 
     @PutMapping("air")
     public ResponseEntity<AirData> ambientData(@RequestBody AirData airData) {
+        airData.setSensorName(airData.getSensorName()+"_Zepol.dev");
         return ResponseEntity.ok(airData);
     }
 
@@ -24,8 +25,11 @@ public class SensorController {
     }
 
     @GetMapping("irrigate")
-    public Boolean activateIrrigate() {
+    public String activateIrrigate() {
         Random random = new Random();
-        return random.nextBoolean();
+        boolean active = random.nextBoolean();
+
+        return "{\"active\":" + active + "}";
+
     }
 }
