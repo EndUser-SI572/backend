@@ -5,7 +5,8 @@ import com.platform.agriwatch.application.dto.request.sensor.SensorRequest;
 import com.platform.agriwatch.application.dto.request.sensor.SoilDataRequest;
 import com.platform.agriwatch.domain.model.Sensor;
 import com.platform.agriwatch.domain.model.dataSensor.AirData;
-import com.platform.agriwatch.domain.repository.SensorRepository;
+import com.platform.agriwatch.domain.model.dataSensor.lastData.LastAirData;
+import com.platform.agriwatch.domain.model.dataSensor.lastData.LastSoilData;
 import com.platform.agriwatch.domain.service.SensorDataService;
 import com.platform.agriwatch.domain.service.SensorService;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ public class SensorController {
     @PutMapping("air")
     public ResponseEntity<AirData> ambientData(@RequestBody AirDataRequest airDataRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                sensorDataService.addAmbientData(airDataRequest));
+                sensorDataService.addAirData(airDataRequest));
     }
 
 
@@ -46,6 +47,20 @@ public class SensorController {
 
     }
 
+    @GetMapping("air/last/{sensorName}")
+    public ResponseEntity<LastAirData> getLastAirData(@PathVariable String sensorName) {
+        return sensorDataService.getLastAirData(sensorName)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("soil/last/{sensorName}")
+    public ResponseEntity<LastSoilData> getLastSoilData(@PathVariable String sensorName) {
+        return sensorDataService.getLastSoilData(sensorName)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("irrigate")
     public String activateIrrigate() {
         Random random = new Random();
@@ -54,4 +69,5 @@ public class SensorController {
         return "{\"active\":" + active + "}";
 
     }
+
 }
