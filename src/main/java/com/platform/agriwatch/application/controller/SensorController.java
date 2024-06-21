@@ -1,27 +1,49 @@
 package com.platform.agriwatch.application.controller;
 
-import com.platform.agriwatch.application.dto.request.sensor.AirData;
-import com.platform.agriwatch.application.dto.request.sensor.SoilData;
+import com.platform.agriwatch.application.dto.request.sensor.AirDataRequest;
+import com.platform.agriwatch.application.dto.request.sensor.SensorRequest;
+import com.platform.agriwatch.application.dto.request.sensor.SoilDataRequest;
+import com.platform.agriwatch.domain.model.Sensor;
+import com.platform.agriwatch.domain.model.dataSensor.AirData;
+import com.platform.agriwatch.domain.repository.SensorRepository;
+import com.platform.agriwatch.domain.service.SensorDataService;
+import com.platform.agriwatch.domain.service.SensorService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Random;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping(value = "sensor/api/v1", produces = "application/json")
 public class SensorController {
 
+    private final SensorService sensorService;
+    private final SensorDataService sensorDataService;
 
-    @PutMapping("air")
-    public ResponseEntity<AirData> ambientData(@RequestBody AirData airData) {
-        airData.setSensorName(airData.getSensorName()+"_Zepol.dev");
-        return ResponseEntity.ok(airData);
+    @PostMapping("add")
+    public ResponseEntity<Sensor> addSensor(@RequestBody SensorRequest sensorRequest) {
+
+        Sensor createdSensor = sensorService.createSensor(sensorRequest.toSensor());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdSensor);
     }
 
+    @PutMapping("air")
+    public ResponseEntity<AirData> ambientData(@RequestBody AirDataRequest airDataRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                sensorDataService.addAmbientData(airDataRequest));
+    }
+
+
     @PutMapping("soil")
-    public ResponseEntity<List<SoilData>> soilData(@RequestBody List<SoilData> soilDataList) {
-        return ResponseEntity.ok(soilDataList);
+    public ResponseEntity<Void> soilData(@RequestBody List<SoilDataRequest> soilDataRequestList) {
+
+        soilDataRequestList.forEach(sensorDataService::addSoilData);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+
     }
 
     @GetMapping("irrigate")

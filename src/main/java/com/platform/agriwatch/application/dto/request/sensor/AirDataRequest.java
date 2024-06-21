@@ -3,7 +3,11 @@ package com.platform.agriwatch.application.dto.request.sensor;
 import lombok.Data;
 
 @Data
-public class SoilData {
+public class AirDataRequest {
+
+    private Double temperatureValue;
+    private Double humidityValue;
     private String sensorName;
-    private Float sensorValue;
+
+
 }
