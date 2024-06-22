@@ -1,5 +1,6 @@
 package com.platform.agriwatch.application.controller;
 
+import com.platform.agriwatch.application.dto.response.PlantResponse;
 import com.platform.agriwatch.application.dto.response.sensor.LastAirDataResponse;
 import com.platform.agriwatch.application.dto.response.sensor.LastSoilDataResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,8 +19,8 @@ public class SensorWebSocketController {
         this.template.convertAndSend("/topic/airData", lastAirDataResponse);
     }
 
-    public void sendSoilDataUpdate(LastSoilDataResponse lastSoilDataResponse) {
-        this.template.convertAndSend("/topic/soilData", lastSoilDataResponse);
+    public void sendPlantDataUpdate(PlantResponse plantResponse) {
+        this.template.convertAndSend("/topic/plantData", plantResponse);
     }
 
 }

@@ -4,8 +4,11 @@ import com.platform.agriwatch.application.dto.request.PlantRequest;
 import com.platform.agriwatch.application.dto.response.PlantResponse;
 import com.platform.agriwatch.domain.model.Plant;
 import com.platform.agriwatch.domain.model.User;
+import com.platform.agriwatch.domain.repository.PlantRepository;
+import com.platform.agriwatch.domain.repository.dataSensor.lastData.LastSoilDataRepository;
 import com.platform.agriwatch.domain.service.PlantService;
 
+import com.platform.agriwatch.domain.service.SensorDataService;
 import com.platform.agriwatch.domain.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,7 @@ public class PlantController {
 
     private final PlantService plantService;
     private final UserService userService;
+    private final LastSoilDataRepository lastSoilDataRepository;
 
     @PostMapping
     public ResponseEntity<PlantResponse> addPlant(@RequestBody PlantRequest plantRequest) {
@@ -45,6 +49,7 @@ public class PlantController {
     @GetMapping("{plantId}")
     public ResponseEntity<PlantResponse>getPlantById(@PathVariable Long plantId) {
         Optional<Plant> plant = plantService.getById(plantId);
+
 
         return plant.map(
                 value -> ResponseEntity.ok(new PlantResponse(value)))

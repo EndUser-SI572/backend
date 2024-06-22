@@ -1,7 +1,7 @@
 package com.platform.agriwatch.domain.service.serviceImpl;
 
 import com.platform.agriwatch.domain.model.Sensor;
-import com.platform.agriwatch.domain.repository.SensorRepository;
+import com.platform.agriwatch.domain.repository.dataSensor.SensorRepository;
 import com.platform.agriwatch.domain.service.SensorService;
 import org.springframework.stereotype.Service;
 

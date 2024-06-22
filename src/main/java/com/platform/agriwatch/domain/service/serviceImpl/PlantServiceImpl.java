@@ -5,6 +5,7 @@ import com.platform.agriwatch.domain.model.Sensor;
 import com.platform.agriwatch.domain.model.User;
 import com.platform.agriwatch.domain.repository.PlantRepository;
 import com.platform.agriwatch.domain.repository.UserRepository;
+import com.platform.agriwatch.domain.repository.dataSensor.SensorRepository;
 import com.platform.agriwatch.domain.service.PlantService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,26 @@ public class PlantServiceImpl implements PlantService {
 
     private final PlantRepository plantRepository;
     private final UserRepository userRepository;
+    private final SensorRepository sensorRepository;
 
-    public PlantServiceImpl(PlantRepository plantRepository, UserRepository userRepository) {
+    public PlantServiceImpl(PlantRepository plantRepository, UserRepository userRepository, SensorRepository sensorRepository) {
         this.plantRepository = plantRepository;
         this.userRepository = userRepository;
+        this.sensorRepository = sensorRepository;
     }
 
     @Override
     public Plant create(Plant plant) {
+
+        List<Sensor> sensors = sensorRepository.findBySensorType("soil_moisture");
+        for (Sensor sensor : sensors) {
+            if(sensor.getAvailable()){
+                plant.setSensor(sensor);
+                sensor.setAvailable(false);
+                sensorRepository.save(sensor);
+                break;
+            }
+        }
 
         return plantRepository.save(plant);
     }
@@ -36,7 +49,9 @@ public class PlantServiceImpl implements PlantService {
 
     @Override
     public List<Plant> getPlantsByUserId(Long userId) {
+
         return plantRepository.findPlantsByUserId(userId);
+
     }
 
     @Override
@@ -53,6 +68,10 @@ public class PlantServiceImpl implements PlantService {
             User user = plantToDelete.getUser();
             user.setNumberPlants(user.getNumberPlants() - 1);
             userRepository.save(user);
+
+            Sensor sensor = plantToDelete.getSensor();
+            sensor.setAvailable(true);
+            sensorRepository.save(sensor);
 
             plantRepository.delete(plantToDelete);
             return ResponseEntity.ok().build();

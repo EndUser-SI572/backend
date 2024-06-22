@@ -25,6 +25,9 @@ public class Plant {
 
     private String imageUrl;
 
+    @OneToOne
+    private Sensor sensor;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

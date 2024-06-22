@@ -2,6 +2,7 @@ package com.platform.agriwatch.domain.service.serviceImpl;
 
 import com.platform.agriwatch.application.controller.SensorWebSocketController;
 import com.platform.agriwatch.application.dto.request.sensor.AirDataRequest;
+import com.platform.agriwatch.application.dto.response.PlantResponse;
 import com.platform.agriwatch.application.dto.response.sensor.LastAirDataResponse;
 import com.platform.agriwatch.application.dto.response.sensor.LastSoilDataResponse;
 import com.platform.agriwatch.application.dto.request.sensor.SoilDataRequest;
@@ -10,7 +11,8 @@ import com.platform.agriwatch.domain.model.dataSensor.AirData;
 import com.platform.agriwatch.domain.model.dataSensor.SoilData;
 import com.platform.agriwatch.domain.model.dataSensor.lastData.LastAirData;
 import com.platform.agriwatch.domain.model.dataSensor.lastData.LastSoilData;
-import com.platform.agriwatch.domain.repository.SensorRepository;
+import com.platform.agriwatch.domain.repository.PlantRepository;
+import com.platform.agriwatch.domain.repository.dataSensor.SensorRepository;
 import com.platform.agriwatch.domain.repository.dataSensor.AirDataRepository;
 import com.platform.agriwatch.domain.repository.dataSensor.SoilDataRepository;
 import com.platform.agriwatch.domain.repository.dataSensor.lastData.LastAirDataRepository;
@@ -32,6 +34,7 @@ public class SensorDataServiceImpl implements SensorDataService {
     private final LastAirDataRepository lastAirDataRepository;
     private final LastSoilDataRepository lastSoilDataRepository;
     private final SensorWebSocketController sensorWebSocketController;
+    private final PlantRepository plantRepository;
 
     @Override
     public SoilData addSoilData(SoilDataRequest soilDataRequest) {
@@ -46,8 +49,11 @@ public class SensorDataServiceImpl implements SensorDataService {
             LastSoilData lastSoilData = getLastSoilData(existingLastSoilData, soilData, sensor);
             lastSoilDataRepository.save(lastSoilData);
 
+            PlantResponse plantResponse = new PlantResponse(plantRepository.findBySensor(sensor.get()));
+            plantResponse.setHumidity(lastSoilData.getSensorValue());
+
             //notificación de actualización
-            sensorWebSocketController.sendSoilDataUpdate(new LastSoilDataResponse(soilData));
+            sensorWebSocketController.sendPlantDataUpdate(plantResponse);
             return soilData;
         }
         return null;

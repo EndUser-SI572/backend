@@ -1,6 +1,8 @@
 package com.platform.agriwatch.application.dto.response;
 
+import com.platform.agriwatch.application.dto.response.sensor.LastSoilDataResponse;
 import com.platform.agriwatch.domain.model.Plant;
+import com.platform.agriwatch.domain.model.dataSensor.lastData.LastSoilData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,16 +18,13 @@ public class PlantResponse {
     private String name;
     private String scientificName;
     private Double humidity;
-    private Double temperature;
     private String imageUrl;
     private Long userId;
 
-    public PlantResponse(Plant plant) {
+    public PlantResponse(Plant plant ) {
         id = plant.getId();
         name = plant.getName();
         scientificName = plant.getScientificName();
-        humidity = 0.0;
-        temperature= 0.0;
         imageUrl = plant.getImageUrl();
         userId = plant.getUser().getId();
     }
