@@ -8,6 +8,7 @@ import com.platform.agriwatch.domain.model.dataSensor.SoilData;
 import com.platform.agriwatch.domain.model.dataSensor.lastData.LastAirData;
 import com.platform.agriwatch.domain.model.dataSensor.lastData.LastSoilData;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SensorDataService {
@@ -15,8 +16,8 @@ public interface SensorDataService {
     SoilData addSoilData(SoilDataRequest soilDataRequest);
     AirData addAirData(AirDataRequest airDataRequest);
 
-    Optional<LastAirData> getLastAirData(String sensorName);
+    List<LastAirData> getLastAirData();
 
-    Optional<LastSoilData> getLastSoilData(String sensorName);
+    List<LastSoilData> getLastSoilData();
 
 }

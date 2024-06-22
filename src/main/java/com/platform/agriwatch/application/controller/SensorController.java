@@ -1,10 +1,9 @@
 package com.platform.agriwatch.application.controller;
 
-import com.platform.agriwatch.application.dto.request.sensor.AirDataRequest;
-import com.platform.agriwatch.application.dto.request.sensor.SensorRequest;
-import com.platform.agriwatch.application.dto.request.sensor.SoilDataRequest;
+import com.platform.agriwatch.application.dto.request.sensor.*;
+import com.platform.agriwatch.application.dto.response.sensor.LastAirDataResponse;
+import com.platform.agriwatch.application.dto.response.sensor.LastSoilDataResponse;
 import com.platform.agriwatch.domain.model.Sensor;
-import com.platform.agriwatch.domain.model.dataSensor.AirData;
 import com.platform.agriwatch.domain.model.dataSensor.lastData.LastAirData;
 import com.platform.agriwatch.domain.model.dataSensor.lastData.LastSoilData;
 import com.platform.agriwatch.domain.service.SensorDataService;
@@ -15,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Random;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController
@@ -28,46 +27,53 @@ public class SensorController {
     @PostMapping("add")
     public ResponseEntity<Sensor> addSensor(@RequestBody SensorRequest sensorRequest) {
 
-        Sensor createdSensor = sensorService.createSensor(sensorRequest.toSensor());
+        Sensor createdSensor = sensorService.createSensor(new Sensor(sensorRequest));
         return ResponseEntity.status(HttpStatus.CREATED).body(createdSensor);
     }
 
     @PutMapping("air")
-    public ResponseEntity<AirData> ambientData(@RequestBody AirDataRequest airDataRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                sensorDataService.addAirData(airDataRequest));
+    public ResponseEntity<Void> ambientData(@RequestBody AirDataRequest airDataRequest) {
+        sensorDataService.addAirData(airDataRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @PutMapping("soil")
-    public ResponseEntity<Void> soilData(@RequestBody List<SoilDataRequest> soilDataRequestList) {
-
-        soilDataRequestList.forEach(sensorDataService::addSoilData);
+    public ResponseEntity<Void> soilData(@RequestBody SoilDataRequest soilDataRequest) {
+        sensorDataService.addSoilData(soilDataRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
-
     }
 
-    @GetMapping("air/last/{sensorName}")
-    public ResponseEntity<LastAirData> getLastAirData(@PathVariable String sensorName) {
-        return sensorDataService.getLastAirData(sensorName)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/air/last")
+    public ResponseEntity<List<LastAirDataResponse>> getLastAirData() {
+        List<LastAirData> lastAirDataList = sensorDataService.getLastAirData();
+
+        List<LastAirDataResponse> responseList = lastAirDataList.stream()
+                .map(LastAirDataResponse::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
 
-    @GetMapping("soil/last/{sensorName}")
-    public ResponseEntity<LastSoilData> getLastSoilData(@PathVariable String sensorName) {
-        return sensorDataService.getLastSoilData(sensorName)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/soil/last")
+    public ResponseEntity<List<LastSoilDataResponse>> getLastSoilData() {
+        List<LastSoilData> lastSoilDataList = sensorDataService.getLastSoilData();
+
+        List<LastSoilDataResponse> responseList = lastSoilDataList.stream()
+                .map(LastSoilDataResponse::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
 
-    @GetMapping("irrigate")
-    public String activateIrrigate() {
-        Random random = new Random();
-        boolean active = random.nextBoolean();
+    @GetMapping("/irrigate")
+    public ResponseEntity<String> activateIrrigate() {
+        List<LastSoilData> lastSoilDataList = sensorDataService.getLastSoilData();
 
-        return "{\"active\":" + active + "}";
+        boolean active = lastSoilDataList.stream()
+                .anyMatch(lastSoilData -> lastSoilData.getSensorValue() < 10.0);
 
+        return ResponseEntity.ok("{\"active\":" + active + "}");
     }
 
 }

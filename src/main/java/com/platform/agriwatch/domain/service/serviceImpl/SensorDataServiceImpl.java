@@ -1,6 +1,9 @@
 package com.platform.agriwatch.domain.service.serviceImpl;
 
+import com.platform.agriwatch.application.controller.SensorWebSocketController;
 import com.platform.agriwatch.application.dto.request.sensor.AirDataRequest;
+import com.platform.agriwatch.application.dto.response.sensor.LastAirDataResponse;
+import com.platform.agriwatch.application.dto.response.sensor.LastSoilDataResponse;
 import com.platform.agriwatch.application.dto.request.sensor.SoilDataRequest;
 import com.platform.agriwatch.domain.model.Sensor;
 import com.platform.agriwatch.domain.model.dataSensor.AirData;
@@ -16,6 +19,7 @@ import com.platform.agriwatch.domain.service.SensorDataService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +31,7 @@ public class SensorDataServiceImpl implements SensorDataService {
     private final SensorRepository sensorRepository;
     private final LastAirDataRepository lastAirDataRepository;
     private final LastSoilDataRepository lastSoilDataRepository;
+    private final SensorWebSocketController sensorWebSocketController;
 
     @Override
     public SoilData addSoilData(SoilDataRequest soilDataRequest) {
@@ -41,6 +46,8 @@ public class SensorDataServiceImpl implements SensorDataService {
             LastSoilData lastSoilData = getLastSoilData(existingLastSoilData, soilData, sensor);
             lastSoilDataRepository.save(lastSoilData);
 
+            //notificación de actualización
+            sensorWebSocketController.sendSoilDataUpdate(new LastSoilDataResponse(soilData));
             return soilData;
         }
         return null;
@@ -59,23 +66,24 @@ public class SensorDataServiceImpl implements SensorDataService {
             LastAirData lastAirData = getLastAirData(existingLastAirData, airData, sensor);
             lastAirDataRepository.save(lastAirData);
 
+            //notificación de actualización
+            sensorWebSocketController.sendAirDataUpdate(new LastAirDataResponse(airData));
             return airData;
         }
         return null;
     }
 
-    //public metodos
+
     @Override
-    public Optional<LastAirData> getLastAirData(String sensorName) {
-        Optional<Sensor> sensor = sensorRepository.findBySensorName(sensorName);
-        return sensor.flatMap(lastAirDataRepository::findBySensor);
+    public List<LastAirData> getLastAirData() {
+        return lastAirDataRepository.findAll();
     }
 
     @Override
-    public Optional<LastSoilData> getLastSoilData(String sensorName) {
-        Optional<Sensor> sensor = sensorRepository.findBySensorName(sensorName);
-        return sensor.flatMap(lastSoilDataRepository::findBySensor);
+    public List<LastSoilData> getLastSoilData() {
+        return lastSoilDataRepository.findAll();
     }
+
 
     //private metodos
     private static LastSoilData getLastSoilData(Optional<LastSoilData> existingLastSoilData, SoilData soilData, Optional<Sensor> sensor) {
