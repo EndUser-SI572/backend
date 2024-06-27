@@ -80,6 +80,5 @@ public class AuthServiceImpl implements AuthService {
 
         return new AuthResponse("success", "User registered successfully", token, newUser.toUserResponse());
 
-
     }
 }

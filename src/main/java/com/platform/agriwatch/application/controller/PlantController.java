@@ -4,8 +4,11 @@ import com.platform.agriwatch.application.dto.request.PlantRequest;
 import com.platform.agriwatch.application.dto.response.PlantResponse;
 import com.platform.agriwatch.domain.model.Plant;
 import com.platform.agriwatch.domain.model.User;
+import com.platform.agriwatch.domain.repository.PlantRepository;
+import com.platform.agriwatch.domain.repository.dataSensor.lastData.LastSoilDataRepository;
 import com.platform.agriwatch.domain.service.PlantService;
 
+import com.platform.agriwatch.domain.service.SensorDataService;
 import com.platform.agriwatch.domain.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,7 @@ public class PlantController {
 
     private final PlantService plantService;
     private final UserService userService;
+    private final LastSoilDataRepository lastSoilDataRepository;
 
     @PostMapping
     public ResponseEntity<PlantResponse> addPlant(@RequestBody PlantRequest plantRequest) {
@@ -32,24 +36,25 @@ public class PlantController {
         if (user.isEmpty())
             return ResponseEntity.badRequest().build();
 
-        Plant plant = plantRequest.toPlant();
+        Plant plant = new Plant(plantRequest);
         plant.setUser(user.get());
         plantService.create(plant);
 
         user.get().setNumberPlants(user.get().getNumberPlants()+1);
         userService.update(user.get());
 
-        return new ResponseEntity<>(plant.toPlantResponse(), HttpStatus.CREATED);
+        return new ResponseEntity<>(new PlantResponse(plant), HttpStatus.CREATED);
     }
 
     @GetMapping("{plantId}")
     public ResponseEntity<PlantResponse>getPlantById(@PathVariable Long plantId) {
         Optional<Plant> plant = plantService.getById(plantId);
 
-        if (plant.isPresent())
-            return ResponseEntity.ok(plant.get().toPlantResponse());
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return plant.map(
+                value -> ResponseEntity.ok(new PlantResponse(value)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+
     }
 
     @GetMapping("/user/{userId}")
@@ -59,7 +64,7 @@ public class PlantController {
         if (user.isPresent()) {
             List<Plant> plants = plantService.getPlantsByUserId(userId);
             List<PlantResponse> plantResponses = plants.stream()
-                    .map(Plant::toPlantResponse)
+                    .map(PlantResponse::new)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(plantResponses);
         }
@@ -77,12 +82,10 @@ public class PlantController {
         Plant newPlant = plant.get();
         newPlant.setName(plantRequest.getName());
         newPlant.setScientificName(plantRequest.getScientificName());
-        newPlant.setIdealHumidity(plantRequest.getIdealHumidity());
-        newPlant.setIdealTemperature(plantRequest.getIdealTemperature());
         newPlant.setImageUrl(plantRequest.getImageUrl());
         plantService.update(newPlant);
 
-        return ResponseEntity.ok(newPlant.toPlantResponse());
+        return ResponseEntity.ok(new PlantResponse(newPlant));
     }
 
     @DeleteMapping("{plantId}")

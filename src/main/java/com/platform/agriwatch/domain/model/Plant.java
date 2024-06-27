@@ -1,6 +1,6 @@
 package com.platform.agriwatch.domain.model;
 
-import com.platform.agriwatch.application.dto.response.PlantResponse;
+import com.platform.agriwatch.application.dto.request.PlantRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -23,29 +23,18 @@ public class Plant {
     @NotNull
     private String scientificName;
 
-    @NotNull
-    private Float idealHumidity;
-
-    @NotNull
-    private Float idealTemperature;
-
     private String imageUrl;
+
+    @OneToOne
+    private Sensor sensor;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-
-    public PlantResponse toPlantResponse(){
-        return PlantResponse.builder()
-                .id(this.id)
-                .name(this.name)
-                .scientificName(this.scientificName)
-                .idealHumidity(this.idealHumidity)
-                .idealTemperature(this.idealTemperature)
-                .imageUrl(this.imageUrl)
-                .userId(this.user.getId())
-
-                .build();
+    public Plant(PlantRequest plantRequest){
+        name = plantRequest.getName();
+        scientificName = plantRequest.getScientificName();
+        imageUrl = plantRequest.getImageUrl();
     }
 }
