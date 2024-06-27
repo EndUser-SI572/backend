@@ -39,8 +39,8 @@ public class SensorController {
 
 
     @PutMapping("soil")
-    public ResponseEntity<Void> soilData(@RequestBody SoilDataRequest soilDataRequest) {
-        sensorDataService.addSoilData(soilDataRequest);
+    public ResponseEntity<Void> soilData(@RequestBody List<SoilDataRequest> soilDataList) {
+        sensorDataService.addSoilData(soilDataList);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

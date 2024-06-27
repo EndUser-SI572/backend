@@ -4,8 +4,8 @@ import com.platform.agriwatch.application.controller.SensorWebSocketController;
 import com.platform.agriwatch.application.dto.request.sensor.AirDataRequest;
 import com.platform.agriwatch.application.dto.response.PlantResponse;
 import com.platform.agriwatch.application.dto.response.sensor.LastAirDataResponse;
-import com.platform.agriwatch.application.dto.response.sensor.LastSoilDataResponse;
 import com.platform.agriwatch.application.dto.request.sensor.SoilDataRequest;
+import com.platform.agriwatch.domain.model.Plant;
 import com.platform.agriwatch.domain.model.Sensor;
 import com.platform.agriwatch.domain.model.dataSensor.AirData;
 import com.platform.agriwatch.domain.model.dataSensor.SoilData;
@@ -21,6 +21,7 @@ import com.platform.agriwatch.domain.service.SensorDataService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,30 +38,39 @@ public class SensorDataServiceImpl implements SensorDataService {
     private final PlantRepository plantRepository;
 
     @Override
-    public SoilData addSoilData(SoilDataRequest soilDataRequest) {
-        Optional<Sensor> sensor = sensorRepository.findBySensorName(soilDataRequest.getSensorName());
-        if (sensor.isPresent()) {
-            SoilData soilData = new SoilData(soilDataRequest);
-            soilData.setSensor(sensor.get());
-            soilDataRepository.save(soilData);
+    public void addSoilData(List<SoilDataRequest> soilDataList) {
+        List<SoilData> savedSoilDataList = new ArrayList<>();
 
-            // actualizar LastSoilData
-            Optional<LastSoilData> existingLastSoilData = lastSoilDataRepository.findBySensor(sensor.get());
-            LastSoilData lastSoilData = getLastSoilData(existingLastSoilData, soilData, sensor);
-            lastSoilDataRepository.save(lastSoilData);
+        for (SoilDataRequest soilDataRequest : soilDataList) {
+            Optional<Sensor> sensor = sensorRepository.findBySensorName(soilDataRequest.getSensorName());
+            if (sensor.isPresent()) {
+                SoilData soilData = new SoilData(soilDataRequest);
+                soilData.setSensor(sensor.get());
+                soilDataRepository.save(soilData);
+                savedSoilDataList.add(soilData);
 
-            PlantResponse plantResponse = new PlantResponse(plantRepository.findBySensor(sensor.get()));
-            plantResponse.setHumidity(lastSoilData.getSensorValue());
+                // actualizar LastSoilData
+                Optional<LastSoilData> existingLastSoilData = lastSoilDataRepository.findBySensor(sensor.get());
+                LastSoilData lastSoilData = getLastSoilData(existingLastSoilData, soilData, sensor);
+                lastSoilDataRepository.save(lastSoilData);
 
-            //notificación de actualización
-            sensorWebSocketController.sendPlantDataUpdate(plantResponse);
-            return soilData;
+
+                Plant existingPlant = plantRepository.findBySensor(sensor.get());
+                if(existingPlant !=null) {
+                    PlantResponse plantResponse = new PlantResponse(plantRepository.findBySensor(sensor.get()));
+                    plantResponse.setHumidity(lastSoilData.getSensorValue());
+
+                    //notificación de actualización
+                    sensorWebSocketController.sendPlantDataUpdate(plantResponse);
+                }
+            }
         }
-        return null;
+
     }
 
+
     @Override
-    public AirData addAirData(AirDataRequest airDataRequest) {
+    public void addAirData(AirDataRequest airDataRequest) {
         Optional<Sensor> sensor = sensorRepository.findBySensorName(airDataRequest.getSensorName());
         if (sensor.isPresent()) {
             AirData airData = new AirData(airDataRequest);
@@ -74,9 +84,7 @@ public class SensorDataServiceImpl implements SensorDataService {
 
             //notificación de actualización
             sensorWebSocketController.sendAirDataUpdate(new LastAirDataResponse(airData));
-            return airData;
         }
-        return null;
     }
 
 
